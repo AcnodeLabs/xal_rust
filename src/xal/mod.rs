@@ -11,6 +11,27 @@ pub fn win() {
     app.run().unwrap();
 }
 
+use std::process::Command;
+pub fn run(command_to_run: &str) -> String {
+    let output = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+                .args(&["/C", command_to_run])
+                .output()
+                .expect("failed to execute process (win)")
+    } else {
+        Command::new("sh")
+                .arg("-c")
+                .arg(command_to_run)
+                .output()
+                .expect("failed to execute process (sh)")
+    };
+    
+    let hello = output.stdout;
+    let vec_str: String = String::from_utf8(hello).unwrap();
+    
+    vec_str
+}
+
 pub fn pr(message: &str) {
     println!("{}", message);
 }
@@ -41,6 +62,11 @@ mod tests {
     #[test] 
     fn test_win() {
         win();
+    }
+
+    #[test] fn test_run() {
+        assert_eq!(run("echo hello"), "hello\r\n");
+        run("start https://acnodelabs.com");
     }
 
 }
